@@ -88,7 +88,7 @@ OPTIONAL_FIELDS = {
     "Navigation_Only": [],
     "Eligibility_Check": [],
     "Booking_or_Scheduling": ["group_id", "current_location"],
-    "Urgent_Service_Request": ["preferred_slot", "group_id", "description_note"],
+    "Urgent_Service_Request": ["preferred_slot", "group_id", "description_note", "include_route"],
     "Full_Service_Request": ["group_id", "description_note"],
 }
 
@@ -137,6 +137,7 @@ REQUEST_TEMPLATE = {
     "query": "",
     "eligibility_claim": False,
     "description_note": "",
+    "include_route": False,
 }
 
 ROUTER_OUTPUT_TEMPLATE = {
@@ -187,32 +188,40 @@ FINAL_RESPONSE_TEMPLATE = {
 
 
 def _fresh(template):
+    """Return a deep copy of a standard template."""
     return copy.deepcopy(template)
 
 
 def new_request():
+    """Create a fresh standard request object."""
     return _fresh(REQUEST_TEMPLATE)
 
 
 def new_router_output():
+    """Create a fresh router result object."""
     return _fresh(ROUTER_OUTPUT_TEMPLATE)
 
 
 def new_priority_output():
+    """Create a fresh ANN result object."""
     return _fresh(PRIORITY_OUTPUT_TEMPLATE)
 
 
 def new_logic_output():
+    """Create a fresh Logic / KB result object."""
     return _fresh(LOGIC_OUTPUT_TEMPLATE)
 
 
 def new_csp_output():
+    """Create a fresh CSP result object."""
     return _fresh(CSP_OUTPUT_TEMPLATE)
 
 
 def new_search_output():
+    """Create a fresh Search result object."""
     return _fresh(SEARCH_OUTPUT_TEMPLATE)
 
 
 def new_final_response():
+    """Create a fresh final response object."""
     return _fresh(FINAL_RESPONSE_TEMPLATE)

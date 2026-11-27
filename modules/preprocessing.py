@@ -140,7 +140,15 @@ def preprocess(raw_request):
                               "for example UsesLab(DrKhan, Lab1)")
             else:
                 request["query"] = format_fact(normalize_fact(fact))
+        elif field == "include_route":
+            normalized = text.lower()
+            if normalized in ("yes", "y", "true", "1"):
+                request[field] = True
+            elif normalized in ("no", "n", "false", "0"):
+                request[field] = False
+            else:
+                errors.append("include_route must be yes or no")
         else:
-            request[field] = text                    
+            request[field] = text
 
     return request, errors

@@ -216,6 +216,54 @@ def prove(goal):
                                                                              
                                            
                                                                              
+def registered_roles(name):
+    """Return the roles that the Knowledge Base proves for this person."""
+    person = official_symbol(name)
+    known_facts, _ = forward_chain(FACTS, RULES)
+    roles = []
+    for fact in known_facts:
+        if fact[0] == "Student" and len(fact) == 2 and fact[1] == person:
+            roles.append("student")
+        elif fact[0] == "Instructor" and len(fact) >= 2 and fact[1] == person:
+            roles.append("instructor")
+        elif fact[0] == "Staff" and len(fact) == 2 and fact[1] == person:
+            roles.append("staff")
+    return roles
+
+
+def verify_role(name, role):
+    """Check that the role supplied by the user matches a role proved by the KB."""
+    output = new_logic_output()
+    person = official_symbol(name)
+    roles = registered_roles(person)
+    entered_role = str(role).strip().lower()
+    if entered_role in roles:
+        output["allowed"] = True
+        output["entailed"] = True
+        output["explanation"] = [
+            "Role verified: " + format_fact((roles_predicate(entered_role), person))
+        ]
+    else:
+        output["allowed"] = False
+        output["entailed"] = False
+        if roles:
+            registered = ", ".join(roles)
+            output["explanation"] = [
+                "Role mismatch. " + person + " is registered as " + registered
+                + ", not " + entered_role + "."
+            ]
+        else:
+            output["explanation"] = [
+                person + " is not registered with a role in the knowledge base."
+            ]
+    return output
+
+
+def roles_predicate(role):
+    """Map a normalized role name to its Knowledge Base predicate."""
+    return {"student": "Student", "instructor": "Instructor", "staff": "Staff"}[role]
+
+
 def check_query(query_text):
     """Eligibility_Check: is the typed query entailed by the knowledge base?"""
     fact = parse_fact(query_text)
@@ -230,6 +278,10 @@ def check_request(request):
     """Booking / Urgent / Full requests: is this person allowed to ask for this
     category? This is the 'Eligible / Allowed?' decision in the project flow."""
     category = request["category"]
+    if request.get("role"):
+        identity = verify_role(request["name"], request["role"])
+        if not identity["allowed"]:
+            return identity
     if category in OPEN_CATEGORIES:
         output = new_logic_output()
         output["allowed"] = True

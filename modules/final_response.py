@@ -45,6 +45,13 @@ def build_final_response(request, module_outputs):
     if "Logic_KB" in module_outputs:
         logic = module_outputs["Logic_KB"]
         if request_type == "Eligibility_Check":
+            if logic.get("allowed") == False:
+                reason = {"allowed": False, "explanation": "; ".join(logic["explanation"])}
+                return build_rejection(
+                    request_id,
+                    "Eligibility check rejected because your identity or role could not be verified.",
+                    reason,
+                )
             response["eligibility"] = {
                 "entailed": logic["entailed"],
                 "explanation": "; ".join(logic["explanation"]),

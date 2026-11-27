@@ -11,7 +11,7 @@ response combines only the outputs produced by the selected pipeline.
 from modules.preprocessing import preprocess
 from modules.router import route_request
 from modules.ann import predict_priority, TARGET_ROOMS
-from modules.logic_kb import check_query, check_request
+from modules.logic_kb import check_query, check_request, verify_role
 from modules.csp import schedule_request
 from modules.search import find_route
 from modules.final_response import build_rejection, build_final_response
@@ -38,7 +38,27 @@ def process_request(raw_request):
 
         elif module_name == "Logic_KB":
             if request["request_type"] == "Eligibility_Check":
-                module_outputs["Logic_KB"] = check_query(request["query"])
+                identity = verify_role(request["name"], request["role"])
+                if not identity["allowed"]:
+                    module_outputs["Logic_KB"] = identity
+                    break
+                query_fact = check_query(request["query"])
+                parsed_query = request["query"]
+                from modules.logic_kb import parse_fact, official_symbol
+                parsed_fact = parse_fact(parsed_query)
+                if parsed_fact and len(parsed_fact) > 1:
+                    query_person = official_symbol(parsed_fact[1])
+                    requester = official_symbol(request["name"])
+                    if query_person != requester:
+                        query_fact = {
+                            "allowed": False,
+                            "entailed": False,
+                            "explanation": [
+                                "Identity mismatch. You can only check eligibility "
+                                "for your own account (" + requester + ")."
+                            ],
+                        }
+                module_outputs["Logic_KB"] = query_fact
                 break
             module_outputs["Logic_KB"] = check_request(request)
             if not module_outputs["Logic_KB"]["allowed"]:

@@ -133,3 +133,43 @@ def test_booking_by_ineligible_user_is_rejected_before_csp():
     assert response["decision"] == "rejected"
     assert response["eligibility"]["allowed"] == False
     assert "not eligible" in response["message"]
+
+def test_role_verification_rejects_ali_as_instructor():
+    from modules.logic_kb import verify_role
+    result = verify_role("Ali", "instructor")
+    assert result["allowed"] is False
+    assert "registered as student" in result["explanation"][0]
+
+
+def test_role_verification_accepts_ali_as_student():
+    from modules.logic_kb import verify_role
+    result = verify_role("Ali", "student")
+    assert result["allowed"] is True
+
+
+def test_eligibility_pipeline_rejects_role_mismatch():
+    raw = {"name": "ali", "role": "instructor", "request_type": "Eligibility_Check",
+           "query": "CanRequest(Ali, Viva)"}
+    response = process_request(raw)
+    assert response["decision"] == "rejected"
+    assert response["eligibility"]["allowed"] is False
+    assert "Role mismatch" in response["eligibility"]["explanation"]
+
+
+def test_eligibility_pipeline_accepts_matching_role():
+    raw = {"name": "ali", "role": "student", "request_type": "Eligibility_Check",
+           "query": "CanRequest(Ali, Viva)"}
+    response = process_request(raw)
+    assert response["decision"] == "answered"
+    assert response["eligibility"]["entailed"] is True
+
+
+def test_eligibility_query_cannot_check_another_users_identity():
+    """Reject an eligibility query whose subject differs from the requester."""
+    raw = {"name": "Ali", "role": "student",
+           "request_type": "Eligibility_Check",
+           "query": "CanRequest(DrKhan, Viva)"}
+    response = process_request(raw)
+    assert response["decision"] == "rejected"
+    assert response["eligibility"]["allowed"] is False
+    assert "Identity mismatch" in response["eligibility"]["explanation"]

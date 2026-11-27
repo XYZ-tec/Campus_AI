@@ -87,3 +87,13 @@ python api.py < examples/sample_full_request.json
 4. Update the report cover page with all group members' correct student IDs.
 5. Zip the project using the exact filename format specified by your instructor.
 6. Upload the ZIP and PDF report to Google Classroom.
+
+## Recent correctness fixes
+
+- Eligibility queries verify the entered user's role against the Knowledge Base.
+- Eligibility queries must refer to the requester as the first argument of the predicate; checking another person's record is rejected.
+- Urgent requests do not automatically run Search just because a current location is supplied. The CLI asks whether route guidance is also wanted.
+- ANN uses `eligibility = 0` while eligibility is still unknown. Logic / KB remains the authority for approval.
+- All project functions now include short docstrings describing their purpose.
+
+For an urgent request, answer `yes` to `Do you also want route guidance?` to include Search in the pipeline. Press Enter or answer `no` to skip Search.

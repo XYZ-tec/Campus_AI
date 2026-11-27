@@ -148,3 +148,18 @@ def test_full_service_runs_all_modules():
     assert response["assignment"]["room"] == "AI_Lab"
     assert response["assignment"]["slot"] == 3
     assert response["route"]["path"][-1] == "AI_Lab"
+
+
+def test_urgent_search_is_optional_even_with_current_location():
+    """Urgent requests need explicit route guidance before Search is added."""
+    urgent = {"name": "Ali", "role": "student",
+              "request_type": "Urgent_Service_Request",
+              "category": "AI_Lab_Support", "current_location": "Hostel",
+              "severity": "8", "time_sensitivity": "9", "crowd_level": "5"}
+    request, errors = preprocess(urgent)
+    assert errors == []
+    assert route_request(request)["selected_pipeline"] == ["ANN", "Logic_KB", "CSP"]
+    urgent["include_route"] = "yes"
+    request, errors = preprocess(urgent)
+    assert errors == []
+    assert route_request(request)["selected_pipeline"] == ["ANN", "Logic_KB", "CSP", "Search"]

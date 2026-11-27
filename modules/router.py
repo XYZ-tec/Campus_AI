@@ -25,8 +25,12 @@ def route_request(request):
 
                                                                              
                                                                       
-    if request_type in OPTIONAL_SEARCH_TYPES and request["current_location"] != "":
-        pipeline.append("Search")
+    if request_type == "Booking_or_Scheduling":
+        if request.get("current_location", ""):
+            pipeline.append("Search")
+    elif request_type == "Urgent_Service_Request":
+        if request.get("include_route", False):
+            pipeline.append("Search")
 
     output = new_router_output()
     output["request_id"] = request["request_id"]

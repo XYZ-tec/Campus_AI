@@ -15,7 +15,7 @@ def sample_request():
 
 def test_ann_uses_seven_features_in_fixed_order():
     """Check that ANN preprocessing follows the standard seven-feature vector."""
-    vector = build_feature_vector(sample_request())
+    vector = build_feature_vector(sample_request(), eligibility=True)
     assert len(vector) == 7
     assert vector[0] == 0
     assert vector[1] == 0

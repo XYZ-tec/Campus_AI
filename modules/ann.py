@@ -49,7 +49,7 @@ def estimate_distance(request):
     return result["cost"] if result["path"] else 10
 
 
-def build_feature_vector(request, eligibility=True):
+def build_feature_vector(request, eligibility=False):
     """Encode request information in the fixed handout feature order."""
     role = ROLE_ENCODING.get(request.get("role", "student"), 0)
     request_type = CATEGORY_ENCODING.get(request.get("category", "AI_Lab_Support"), 0)
@@ -114,6 +114,7 @@ class Perceptron:
     """A small binary perceptron trained with the perceptron update rule."""
 
     def __init__(self, input_size=7):
+        """Initialize the perceptron weights and bias."""
         self.weights = [0.0] * input_size
         self.bias = 0.0
 
@@ -205,7 +206,7 @@ MLP_MODEL = MLP()
 MLP_MODEL.train(_TRAINING_FEATURES, _CLASS_LABELS)
 
 
-def predict_priority(request, eligibility=True):
+def predict_priority(request, eligibility=False):
     """Return Perceptron baseline and MLP operational priority predictions."""
     raw_vector = build_feature_vector(request, eligibility)
     features = normalize_features(raw_vector)

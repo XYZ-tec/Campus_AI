@@ -27,6 +27,7 @@ PROMPTS = {
     "group_id": "Enter Group ID (for example G1)",
     "query": "Enter Query (for example UsesLab(DrKhan, Lab1))",
     "description_note": "Enter Description Note",
+    "include_route": "Do you also want route guidance? (yes/no)",
 }
 
 

@@ -137,69 +137,64 @@ class Perceptron:
 
 
 class MLP:
-    """A one-hidden-layer neural network with sigmoid and softmax outputs."""
+    """Neural network from the MLP diagram: 7 inputs, hidden layer 1 (4 neurons),
+    hidden layer 2 (3 neurons) and 4 outputs (low / normal / high / urgent)."""
 
-    def __init__(self, input_size=7, hidden_size=9, output_size=4):
+    def __init__(self, sizes=(7, 4, 3, 4)):
         random.seed(29)
-        self.hidden_weights = [[random.uniform(-0.5, 0.5) for _ in range(input_size)]
-                               for _ in range(hidden_size)]
-        self.hidden_bias = [0.0] * hidden_size
-        self.output_weights = [[random.uniform(-0.5, 0.5) for _ in range(hidden_size)]
-                               for _ in range(output_size)]
-        self.output_bias = [0.0] * output_size
+        self.weights = []
+        self.biases = []
+        for layer in range(len(sizes) - 1):
+            self.weights.append([[random.uniform(-0.5, 0.5) for _ in range(sizes[layer])]
+                                 for _ in range(sizes[layer + 1])])
+            self.biases.append([0.0] * sizes[layer + 1])
+
+    def layer_totals(self, layer, inputs):
+        """Weighted sum plus bias for every neuron in one layer."""
+        totals = []
+        for neuron, weights in enumerate(self.weights[layer]):
+            total = sum(weights[i] * inputs[i] for i in range(len(inputs)))
+            totals.append(total + self.biases[layer][neuron])
+        return totals
 
     def forward(self, features):
-        """Calculate hidden activations and final class probabilities."""
-        hidden = []
-        for index, weights in enumerate(self.hidden_weights):
-            total = sum(weights[j] * features[j] for j in range(len(features)))
-            hidden.append(sigmoid(total + self.hidden_bias[index]))
-        logits = []
-        for index, weights in enumerate(self.output_weights):
-            logits.append(sum(weights[j] * hidden[j] for j in range(len(hidden)))
-                          + self.output_bias[index])
+        """Pass the features through both hidden layers (sigmoid) and the
+        output layer (softmax). Returns every layer's outputs."""
+        hidden1 = [sigmoid(value) for value in self.layer_totals(0, features)]
+        hidden2 = [sigmoid(value) for value in self.layer_totals(1, hidden1)]
+        logits = self.layer_totals(2, hidden2)
         maximum = max(logits)
         exponents = [math.exp(value - maximum) for value in logits]
-        total = sum(exponents)
-        probabilities = [value / total for value in exponents]
-        return hidden, probabilities
+        probabilities = [value / sum(exponents) for value in exponents]
+        return [features, hidden1, hidden2, probabilities]
 
     def predict_probabilities(self, features):
         """Return the four priority-class probabilities."""
-        return self.forward(features)[1]
+        return self.forward(features)[-1]
 
     def predict(self, features):
         """Return the index of the most likely priority class."""
         probabilities = self.predict_probabilities(features)
         return max(range(len(probabilities)), key=lambda index: probabilities[index])
 
-    def train(self, features, labels, epochs=100, learning_rate=0.15):
-        """Train the network using backpropagation and multiclass cross-entropy."""
+    def train(self, features, labels, epochs=150, learning_rate=0.3):
+        """Train with backpropagation and cross-entropy: compute each layer's
+        error from the output backwards, then update weights and biases."""
         for epoch in range(epochs):
             for row, label in zip(features, labels):
-                hidden, probabilities = self.forward(row)
-                output_errors = list(probabilities)
-                output_errors[label] -= 1.0
-                hidden_errors = [0.0] * len(hidden)
-                for output_index in range(len(self.output_weights)):
-                    for hidden_index in range(len(hidden)):
-                        hidden_errors[hidden_index] += (
-                            output_errors[output_index]
-                            * self.output_weights[output_index][hidden_index]
-                        )
-                for output_index in range(len(self.output_weights)):
-                    for hidden_index in range(len(hidden)):
-                        self.output_weights[output_index][hidden_index] -= (
-                            learning_rate * output_errors[output_index] * hidden[hidden_index]
-                        )
-                    self.output_bias[output_index] -= learning_rate * output_errors[output_index]
-                for hidden_index in range(len(hidden)):
-                    delta = hidden_errors[hidden_index] * hidden[hidden_index] * (1 - hidden[hidden_index])
-                    for input_index in range(len(row)):
-                        self.hidden_weights[hidden_index][input_index] -= (
-                            learning_rate * delta * row[input_index]
-                        )
-                    self.hidden_bias[hidden_index] -= learning_rate * delta
+                outputs = self.forward(row)
+                errors = list(outputs[-1])
+                errors[label] -= 1.0                     # softmax + cross-entropy error
+                for layer in range(len(self.weights) - 1, -1, -1):
+                    inputs = outputs[layer]
+                    previous_errors = [0.0] * len(inputs)
+                    for neuron in range(len(errors)):
+                        for i in range(len(inputs)):
+                            previous_errors[i] += errors[neuron] * self.weights[layer][neuron][i]
+                            self.weights[layer][neuron][i] -= learning_rate * errors[neuron] * inputs[i]
+                        self.biases[layer][neuron] -= learning_rate * errors[neuron]
+                    errors = [previous_errors[i] * inputs[i] * (1 - inputs[i])   # sigmoid derivative
+                              for i in range(len(inputs))]
 
 
 _TRAINING_FEATURES, _BINARY_LABELS, _CLASS_LABELS = make_training_data()

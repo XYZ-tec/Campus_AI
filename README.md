@@ -27,6 +27,14 @@ python -m pip install -r requirements.txt
 python cli.py
 ```
 
+## Run the web page
+
+```bash
+python web.py
+```
+
+Then open http://localhost:8000 in a browser. Press Ctrl + C in the terminal to stop it.
+
 ## Run tests
 
 ```bash

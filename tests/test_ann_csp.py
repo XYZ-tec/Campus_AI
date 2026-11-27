@@ -46,3 +46,14 @@ def test_csp_rejects_unknown_category():
     request["category"] = "Unknown"
     result = schedule_request(request)
     assert result["decision"] == "rejected"
+
+
+def test_csp_never_double_books():
+    """Check that a room and slot given to one request is not given to another."""
+    first = schedule_request(sample_request())
+    second = schedule_request(sample_request())
+    assert first["decision"] == "accepted"
+    assert second["decision"] == "accepted"
+    first_booking = (first["assigned_room"], first["assigned_slot"])
+    second_booking = (second["assigned_room"], second["assigned_slot"])
+    assert first_booking != second_booking

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smart Campus AI</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: "Segoe UI", Arial, sans-serif;
+    background: #f3f5f8; color: #1f2933;
+  }
+  header { background: #1e3a5f; color: #fff; padding: 18px 32px; }
+  header h1 { margin: 0; font-size: 22px; }
+  header p { margin: 4px 0 0; font-size: 14px; opacity: 0.8; }
+  main {
+    display: grid; grid-template-columns: 380px 1fr; gap: 24px;
+    max-width: 1100px; margin: 24px auto; padding: 0 16px;
+  }
+  .card {
+    background: #fff; border-radius: 10px; padding: 22px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
+  .card h2 { margin: 0 0 16px; font-size: 18px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 12px 0 4px; }
+  label .hint { font-weight: 400; color: #7b8794; }
+  input, select {
+    width: 100%; padding: 9px 10px; font-size: 14px;
+    border: 1px solid #cbd2d9; border-radius: 6px; background: #fff;
+  }
+  input:focus, select:focus { outline: 2px solid #3e7bfa; border-color: transparent; }
+  button {
+    margin-top: 20px; width: 100%; padding: 11px; font-size: 15px; font-weight: 600;
+    color: #fff; background: #1e3a5f; border: 0; border-radius: 6px; cursor: pointer;
+  }
+  button:hover { background: #2b5283; }
+  button:disabled { background: #9aa5b1; cursor: default; }
+  .empty { color: #7b8794; font-size: 14px; }
+  .status {
+    display: inline-block; padding: 5px 12px; border-radius: 20px;
+    font-weight: 700; font-size: 13px; text-transform: uppercase;
+  }
+  .ok { background: #e3f9e5; color: #1f7a2e; }
+  .bad { background: #ffe3e3; color: #b42318; }
+  .request-id { color: #7b8794; font-size: 13px; margin-left: 8px; }
+  .message { margin: 16px 0 4px; font-size: 15px; }
+  .section { border-top: 1px solid #e4e7eb; margin-top: 16px; padding-top: 12px; }
+  .section h3 { margin: 0 0 8px; font-size: 14px; color: #52606d; text-transform: uppercase; }
+  .row { display: flex; font-size: 14px; padding: 3px 0; }
+  .row span:first-child { width: 150px; flex-shrink: 0; color: #52606d; }
+  .path { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+  .stop { background: #e8f0fe; color: #1e3a5f; padding: 4px 10px; border-radius: 4px; font-size: 13px; }
+  .arrow { color: #9aa5b1; }
+  @media (max-width: 800px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Smart Campus AI Decision Support System</h1>
+  
+</header>
+
+<main>
+  <section class="card">
+    <h2>New Request</h2>
+    <form id="request-form">
+      <label for="name">Name *</label>
+      <input id="name" placeholder="e.g. Ali">
+
+      <label for="role">Role *</label>
+      <select id="role"></select>
+
+      <label for="request_type">Request Type *</label>
+      <select id="request_type"></select>
+
+      <div id="extra-fields"></div>
+
+      <button type="submit" id="submit">Submit Request</button>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Result</h2>
+    <div id="result"><p class="empty">Fill in the form and press Submit Request.</p></div>
+  </section>
+</main>
+
+<script>
+// Labels shown for each form field
+const LABELS = {
+  category: "Category",
+  current_location: "Current Location",
+  destination: "Destination",
+  preferred_slot: "Preferred Slot",
+  severity: "Severity (1-10)",
+  time_sensitivity: "Time Sensitivity (1-10)",
+  crowd_level: "Crowd Level (1-10)",
+  group_id: "Group ID",
+  query: "Query",
+  description_note: "Description Note",
+};
+const BASE_FIELDS = ["name", "role", "request_type"];
+let options = null;
+
+// Fill a <select> with a list of choices
+function fillSelect(select, choices, blankText) {
+  select.innerHTML = "";
+  if (blankText) select.add(new Option(blankText, ""));
+  for (const choice of choices) select.add(new Option(choice.replaceAll("_", " "), choice));
+}
+
+// Build one input box for a field, choosing the right kind of input
+function makeField(field, isRequired) {
+  const label = document.createElement("label");
+  label.htmlFor = field;
+  label.innerHTML = LABELS[field] + (isRequired ? " *" : ' <span class="hint">(optional)</span>');
+
+  let input;
+  if (field === "category") {
+    input = document.createElement("select");
+    fillSelect(input, options.categories, "Select category");
+  } else if (field === "current_location" || field === "destination") {
+    input = document.createElement("select");
+    fillSelect(input, options.locations, "Select location");
+  } else if (field === "preferred_slot") {
+    input = document.createElement("select");
+    fillSelect(input, ["1", "2", "3", "4"], "Select slot");
+  } else if (["severity", "time_sensitivity", "crowd_level"].includes(field)) {
+    input = document.createElement("input");
+    input.type = "number"; input.min = 1; input.max = 10; input.placeholder = "1 to 10";
+  } else {
+    input = document.createElement("input");
+    if (field === "query") input.placeholder = "e.g. UsesLab(DrKhan, Lab1)";
+    if (field === "group_id") input.placeholder = "e.g. G3";
+  }
+  input.id = field;
+  input.dataset.field = field;
+  return [label, input];
+}
+
+// Show only the fields the chosen request type needs
+function showFieldsForType() {
+  const type = document.getElementById("request_type").value;
+  const box = document.getElementById("extra-fields");
+  box.innerHTML = "";
+  for (const field of options.required_fields[type]) {
+    if (!BASE_FIELDS.includes(field)) box.append(...makeField(field, true));
+  }
+  for (const field of options.optional_fields[type]) {
+    box.append(...makeField(field, false));
+  }
+}
+
+// One "label: value" line in the result
+function row(name, value) {
+  return '<div class="row"><span>' + name + "</span><span>" + escapeHtml(String(value)) + "</span></div>";
+}
+
+function escapeHtml(text) {
+  const div = document.createElement("div");
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Draw the final response from the pipeline
+function showResult(response) {
+  const accepted = ["accepted", "completed", "answered"].includes(response.decision);
+  let html = '<span class="status ' + (accepted ? "ok" : "bad") + '">' + escapeHtml(response.decision || "error") + "</span>";
+  if (response.request_id) html += '<span class="request-id">' + escapeHtml(response.request_id) + "</span>";
+  html += '<p class="message">' + escapeHtml(response.message || "") + "</p>";
+
+  const p = response.priority || {};
+  if (Object.keys(p).length) {
+    html += '<div class="section"><h3>Priority (ANN)</h3>'
+      + row("Final priority (MLP)", p.final_priority)
+      + row("Baseline (Perceptron)", String(p.binary_priority).replace("_", " "))
+      + row("Confidence", Math.round(p.confidence * 100) + "%") + "</div>";
+  }
+
+  const e = response.eligibility || {};
+  if (Object.keys(e).length) {
+    const allowed = "allowed" in e ? e.allowed : e.entailed;
+    html += '<div class="section"><h3>Eligibility (Logic / KB)</h3>'
+      + row("Result", allowed ? "Approved" : "Not approved");
+    if (e.explanation) html += row("Explanation", e.explanation);
+    html += "</div>";
+  }
+
+  const a = response.assignment || {};
+  if (Object.keys(a).length) {
+    html += '<div class="section"><h3>Assignment (CSP)</h3>'
+      + row("Room", a.room.replaceAll("_", " ")) + row("Slot", a.slot);
+    if (a.notes) html += row("Note", a.notes);
+    html += "</div>";
+  }
+
+  const r = response.route || {};
+  if (Object.keys(r).length) {
+    const stops = r.path.map(s => '<span class="stop">' + escapeHtml(s.replaceAll("_", " ")) + "</span>");
+    html += '<div class="section"><h3>Route (Search)</h3>'
+      + row("Algorithm", r.algorithm) + row("Total cost", r.cost) + row("Steps", r.steps)
+      + '<div class="path">' + stops.join('<span class="arrow">&rarr;</span>') + "</div></div>";
+  }
+
+  document.getElementById("result").innerHTML = html;
+}
+
+// Collect the form and send it to the Python pipeline
+async function submitForm(event) {
+  event.preventDefault();
+  const request = {
+    name: document.getElementById("name").value,
+    role: document.getElementById("role").value,
+    request_type: document.getElementById("request_type").value,
+  };
+  for (const input of document.querySelectorAll("#extra-fields [data-field]")) {
+    request[input.dataset.field] = input.value;
+  }
+  const button = document.getElementById("submit");
+  button.disabled = true;
+  try {
+    const reply = await fetch("/api/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+    });
+    showResult(await reply.json());
+  } catch (error) {
+    showResult({ decision: "error", message: "Could not reach the server. Is python web.py still running?" });
+  }
+  button.disabled = false;
+}
+
+// Load the choices from Python when the page opens
+async function start() {
+  try {
+    options = await (await fetch("/api/options")).json();
+  } catch (error) {
+    showResult({ decision: "error", message: "Could not load the form. Start the server with python web.py." });
+    return;
+  }
+  fillSelect(document.getElementById("role"), options.roles);
+  fillSelect(document.getElementById("request_type"), options.request_types);
+  document.getElementById("request_type").addEventListener("change", showFieldsForType);
+  document.getElementById("request-form").addEventListener("submit", submitForm);
+  showFieldsForType();
+}
+
+start();
+</script>
+</body>
+</html>

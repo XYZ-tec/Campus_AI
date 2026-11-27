@@ -23,13 +23,13 @@ import heapq
 from core.constants import new_search_output
 from data.campus_graph import build_graph, heuristic
 
-DEPTH_LIMIT = 5         # used by DLS in comparison mode
-BIG_NUMBER = 999999     # stands in for "infinity" in RBFS
+DEPTH_LIMIT = 5                                         
+BIG_NUMBER = 999999                                       
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
+                                                                             
+         
+                                                                             
 def path_cost(graph, path):
     """Add up the edge costs along a path."""
     total = 0
@@ -50,16 +50,16 @@ def make_result(name, graph, path, expanded):
     return result
 
 
-# ---------------------------------------------------------------------------
-# Uninformed algorithms (no costs, no heuristic)
-# ---------------------------------------------------------------------------
+                                                                             
+                                                
+                                                                             
 def bfs(graph, start, goal):
     """Breadth-First Search: shortest path by NUMBER OF STEPS."""
-    frontier = [[start]]        # a queue of paths
+    frontier = [[start]]                          
     visited = [start]
     expanded = 0
     while len(frontier) > 0:
-        path = frontier.pop(0)          # take from the front (queue)
+        path = frontier.pop(0)                                       
         node = path[-1]
         expanded = expanded + 1
         if node == goal:
@@ -73,11 +73,11 @@ def bfs(graph, start, goal):
 
 def dfs(graph, start, goal):
     """Depth-First Search: goes deep first, does NOT guarantee shortest path."""
-    frontier = [[start]]        # a stack of paths
+    frontier = [[start]]                          
     visited = []
     expanded = 0
     while len(frontier) > 0:
-        path = frontier.pop()           # take from the back (stack)
+        path = frontier.pop()                                       
         node = path[-1]
         if node in visited:
             continue
@@ -103,7 +103,7 @@ def dls(graph, start, goal, limit):
             return make_result("DLS", graph, path, expanded)
         if len(path) - 1 < limit:
             for neighbour in sorted(graph[node], reverse=True):
-                if neighbour not in path:       # avoid loops on this path
+                if neighbour not in path:                                 
                     frontier.append(path + [neighbour])
     return make_result("DLS", graph, None, expanded)
 
@@ -126,7 +126,7 @@ def join_paths(forward_path, backward_path):
     Reverse the second one and glue them together."""
     second_half = list(backward_path)
     second_half.reverse()
-    return forward_path + second_half[1:]       # [1:] skips the meeting node (already in forward_path)
+    return forward_path + second_half[1:]                                                              
 
 
 def bidirectional_bfs(graph, start, goal):
@@ -134,14 +134,14 @@ def bidirectional_bfs(graph, start, goal):
     if start == goal:
         return make_result("Bidirectional BFS", graph, [start], 1)
 
-    forward_paths = {start: [start]}    # node -> path from start to that node
-    backward_paths = {goal: [goal]}     # node -> path from goal to that node
+    forward_paths = {start: [start]}                                          
+    backward_paths = {goal: [goal]}                                          
     forward_queue = [start]
     backward_queue = [goal]
     expanded = 0
 
     while len(forward_queue) > 0 and len(backward_queue) > 0:
-        # expand one node from the start side
+                                             
         node = forward_queue.pop(0)
         expanded = expanded + 1
         for neighbour in sorted(graph[node]):
@@ -152,7 +152,7 @@ def bidirectional_bfs(graph, start, goal):
                     full_path = join_paths(forward_paths[neighbour], backward_paths[neighbour])
                     return make_result("Bidirectional BFS", graph, full_path, expanded)
 
-        # expand one node from the goal side
+                                            
         node = backward_queue.pop(0)
         expanded = expanded + 1
         for neighbour in sorted(graph[node]):
@@ -166,17 +166,17 @@ def bidirectional_bfs(graph, start, goal):
     return make_result("Bidirectional BFS", graph, None, expanded)
 
 
-# ---------------------------------------------------------------------------
-# Weighted / informed algorithms
-# ---------------------------------------------------------------------------
+                                                                             
+                                
+                                                                             
 def ucs(graph, start, goal):
     """Uniform Cost Search: always expand the cheapest path so far.
     Needs no heuristic, always finds the cheapest route."""
-    frontier = [(0, [start])]           # (cost so far, path), kept as a heap
+    frontier = [(0, [start])]                                                
     explored = []
     expanded = 0
     while len(frontier) > 0:
-        cost, path = heapq.heappop(frontier)    # pops the smallest cost
+        cost, path = heapq.heappop(frontier)                            
         node = path[-1]
         if node in explored:
             continue
@@ -214,7 +214,7 @@ def greedy(graph, start, goal):
 def a_star(graph, start, goal):
     """A*: expands the path with the smallest f = g + h
     (g = real cost so far, h = straight-line estimate to the goal)."""
-    frontier = [(heuristic(start, goal), 0, [start])]   # (f, g, path)
+    frontier = [(heuristic(start, goal), 0, [start])]                 
     explored = []
     expanded = 0
     while len(frontier) > 0:
@@ -242,21 +242,21 @@ def rbfs_search(graph, goal, path, g, node_f, f_limit):
         return path, node_f, 1
     expanded = 1
 
-    # build the children as small lists: [f, g, name]
+                                                     
     children = []
     for neighbour in graph[node]:
         if neighbour not in path:
             child_g = g + graph[node][neighbour]
             child_f = child_g + heuristic(neighbour, goal)
             if child_f < node_f:
-                child_f = node_f        # a child never gets a smaller f than its parent
+                child_f = node_f                                                        
             children.append([child_f, child_g, neighbour])
 
     if len(children) == 0:
         return None, BIG_NUMBER, expanded
 
     while True:
-        children.sort()                 # best (smallest f) child first
+        children.sort()                                                
         best = children[0]
         if best[0] > f_limit:
             return None, best[0], expanded
@@ -271,7 +271,7 @@ def rbfs_search(graph, goal, path, g, node_f, f_limit):
 
         found, new_f, used = rbfs_search(graph, goal, path + [best[2]], best[1], best[0], new_limit)
         expanded = expanded + used
-        best[0] = new_f                 # remember the backed-up f value
+        best[0] = new_f                                                 
         if found is not None:
             return found, new_f, expanded
 
@@ -283,9 +283,9 @@ def rbfs(graph, start, goal):
     return make_result("RBFS", graph, found, expanded)
 
 
-# ---------------------------------------------------------------------------
-# Operational mode (Phase 2, Sections 6.2, 7.1, 7.2): the official policy
-# ---------------------------------------------------------------------------
+                                                                             
+                                                                         
+                                                                             
 def find_route(source, destination, graph_type="weighted", heuristic_available=True):
     """Pick ONE algorithm by the official project rule:
          unweighted graph                    -> BFS
@@ -298,7 +298,7 @@ def find_route(source, destination, graph_type="weighted", heuristic_available=T
         graph = build_graph(weighted=True)
 
     if source not in graph or destination not in graph:
-        return make_result("None", graph, None, 0)     # invalid node -> no route
+        return make_result("None", graph, None, 0)                               
 
     if graph_type == "unweighted":
         return bfs(graph, source, destination)
@@ -307,9 +307,9 @@ def find_route(source, destination, graph_type="weighted", heuristic_available=T
     return ucs(graph, source, destination)
 
 
-# ---------------------------------------------------------------------------
-# Comparison / demo mode (Phase 2, Sections 4 and 8.2)
-# ---------------------------------------------------------------------------
+                                                                             
+                                                      
+                                                                             
 def compare_all(source, destination):
     """Run all nine algorithms on the weighted graph and return a list of results.
     Costs are in walking minutes, so they can be compared fairly. BFS, DFS, DLS,

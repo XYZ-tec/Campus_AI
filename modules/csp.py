@@ -19,8 +19,8 @@ ROOM_DOMAINS = {
     "Emergency_Help": ["Medical_Center", "Admin_Block"],
 }
 
-# A room cannot be allocated twice in the same slot. The AI Lab's slot 2 is
-# intentionally occupied so the handout's sample request can move to slot 3.
+                                                                           
+                                                                            
 EXISTING_RESERVATIONS = [
     {"room": "AI_Lab", "slot": 1, "group_id": "G1"},
     {"room": "AI_Lab", "slot": 2, "group_id": "G2"},

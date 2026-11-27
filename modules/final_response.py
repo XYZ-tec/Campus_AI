@@ -76,7 +76,7 @@ def build_final_response(request, module_outputs):
             "steps": search["steps"],
         }
 
-    # ---- decision and message depend on the request type (Phase 3, Section 3) ----
+                                                                                    
     if request_type == "Navigation_Only":
         response["decision"] = "completed"
         response["message"] = "Best route generated successfully."

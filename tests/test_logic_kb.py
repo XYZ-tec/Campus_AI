@@ -17,7 +17,7 @@ def gate(name, category):
     return check_request({"name": name, "category": category})
 
 
-# ---------------- parsing and cleaning ----------------
+                                                        
 def test_parse_fact():
     assert parse_fact("UsesLab(DrKhan, Lab1)") == ("UsesLab", "DrKhan", "Lab1")
     assert parse_fact("Student(Ali)") == ("Student", "Ali")
@@ -33,7 +33,7 @@ def test_names_are_cleaned_by_case_and_spaces():
     assert format_fact(fact) == "UsesLab(DrKhan, Lab1)"
 
 
-# ---------------- the instructor's diagram ----------------
+                                                            
 def test_instructor_chain_R2_then_R4():
     result = ask("UsesLab(DrKhan, Lab1)")
     assert result["entailed"] == True
@@ -52,7 +52,7 @@ def test_ali_eligible_by_R1():
     result = ask("Eligible(Ali, AI)")
     assert result["entailed"] == True
     assert result["explanation"][-1].startswith("R1:")
-    assert len(result["explanation"]) == 3          # two facts and the rule
+    assert len(result["explanation"]) == 3                                  
 
 
 def test_sara_is_not_eligible():
@@ -73,7 +73,7 @@ def test_known_facts_are_entailed_directly():
     assert result["explanation"] == ["Known fact: Student(Ali)"]
 
 
-# ---------------- the allowed / not allowed gate ----------------
+                                                                  
 def test_ali_may_request_everything():
     for category in ["AI_Lab_Support", "Viva", "Access", "Maintenance", "Emergency_Help"]:
         assert gate("Ali", category)["allowed"] == True
@@ -100,7 +100,7 @@ def test_unknown_person_is_blocked():
     assert gate("Bilal", "AI_Lab_Support")["allowed"] == False
 
 
-# ---------------- preprocessing and the pipeline ----------------
+                                                                  
 def test_bad_query_is_rejected_in_preprocessing():
     raw = {"name": "DrKhan", "role": "instructor", "request_type": "Eligibility_Check",
            "query": "UsesLab DrKhan Lab1"}

@@ -23,7 +23,7 @@ def test_policy_unweighted_uses_bfs():
     result = find_route("Hostel", "AI_Lab", graph_type="unweighted")
     assert result["algorithm_used"] == "BFS"
     assert result["steps"] == 3
-    assert result["cost"] == 3          # in an unweighted graph cost = number of steps
+    assert result["cost"] == 3                                                         
 
 
 def test_policy_without_heuristic_uses_ucs():

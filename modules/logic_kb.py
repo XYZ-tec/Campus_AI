@@ -21,9 +21,9 @@ from core.constants import new_logic_output
 from data.knowledge_base import FACTS, RULES, OPEN_CATEGORIES
 
 
-# ---------------------------------------------------------------------------
-# Facts as text: reading, cleaning and printing
-# ---------------------------------------------------------------------------
+                                                                             
+                                               
+                                                                             
 def is_variable(term):
     """In a rule, a term starting with a lowercase letter is a variable (like x)."""
     return term[0].islower()
@@ -106,9 +106,9 @@ def normalize_fact(fact):
     return tuple(cleaned)
 
 
-# ---------------------------------------------------------------------------
-# The reasoning engine
-# ---------------------------------------------------------------------------
+                                                                             
+                      
+                                                                             
 def match_premise(premise, fact, bindings):
     """Try to make one rule condition fit one known fact.
     bindings says what each variable is already set to, e.g. {"x": "Ali"}.
@@ -116,7 +116,7 @@ def match_premise(premise, fact, bindings):
     if len(premise) != len(fact) or premise[0] != fact[0]:
         return None
 
-    new_bindings = dict(bindings)       # a copy, so the original is not changed
+    new_bindings = dict(bindings)                                               
     for position in range(1, len(premise)):
         wanted = premise[position]
         actual = fact[position]
@@ -213,9 +213,9 @@ def prove(goal):
     return output
 
 
-# ---------------------------------------------------------------------------
-# The two entry points used by the pipeline
-# ---------------------------------------------------------------------------
+                                                                             
+                                           
+                                                                             
 def check_query(query_text):
     """Eligibility_Check: is the typed query entailed by the knowledge base?"""
     fact = parse_fact(query_text)

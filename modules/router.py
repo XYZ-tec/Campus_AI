@@ -21,10 +21,10 @@ def route_request(request):
     if request_type not in PIPELINES:
         return None
 
-    pipeline = list(PIPELINES[request_type])    # a copy, so the table is never changed
+    pipeline = list(PIPELINES[request_type])                                           
 
-    # Booking and Urgent requests only get route guidance if the user told us
-    # where they are (our decision: the handout just says "optional").
+                                                                             
+                                                                      
     if request_type in OPTIONAL_SEARCH_TYPES and request["current_location"] != "":
         pipeline.append("Search")
 

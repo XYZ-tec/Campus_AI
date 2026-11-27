@@ -11,9 +11,9 @@ plus Phase 1 Sections 2, 4.2 and 7 (fields, validation, router rules).
 
 import copy
 
-# ---------------------------------------------------------------------------
-# Allowed values (used by preprocessing validation, Phase 1 Sec 4.2)
-# ---------------------------------------------------------------------------
+                                                                             
+                                                                    
+                                                                             
 REQUEST_TYPES = [
     "Navigation_Only",
     "Eligibility_Check",
@@ -24,13 +24,13 @@ REQUEST_TYPES = [
 
 ROLES = ["student", "instructor", "staff"]
 
-# Categories offered in the CLI form (Phase 1 Sec 1.2). The same list is the
-# ANN "RequestType" feature (Phase 2 Sec 1.3), so there is only one definition.
-# Emergency_Help comes from the handout's ANN encoding; we expose it in the CLI.
+                                                                            
+                                                                               
+                                                                                
 CATEGORIES = ["AI_Lab_Support", "Viva", "Access", "Maintenance", "Emergency_Help"]
 
-# Campus locations: the 13 places on the instructor's predefined campus map
-# (data/campus_graph.py holds how they connect).
+                                                                           
+                                                
 LOCATIONS = [
     "Admin_Block",
     "Student_Services",
@@ -47,12 +47,12 @@ LOCATIONS = [
     "Hostel",
 ]
 
-VALID_SLOTS = (1, 2, 3, 4)          # Phase 1 Sec 4.2
-SCORE_MIN, SCORE_MAX = 1, 10        # severity / time_sensitivity / crowd_level
+VALID_SLOTS = (1, 2, 3, 4)                           
+SCORE_MIN, SCORE_MAX = 1, 10                                                   
 
-# ---------------------------------------------------------------------------
-# Required fields per request type (Phase 1 Sec 2.2)
-# ---------------------------------------------------------------------------
+                                                                             
+                                                    
+                                                                             
 BASE_FIELDS = ["name", "role", "request_type"]
 
 REQUIRED_FIELDS = {
@@ -69,21 +69,21 @@ REQUIRED_FIELDS = {
     ],
 }
 
-# ---------------------------------------------------------------------------
-# Router table (Phase 1 Sec 7.2). The router will own the needs_* flags.
-# ---------------------------------------------------------------------------
+                                                                             
+                                                                        
+                                                                             
 PIPELINES = {
     "Navigation_Only": ["Search"],
     "Eligibility_Check": ["Logic_KB"],
-    "Booking_or_Scheduling": ["Logic_KB", "CSP"],      # + optional Search
-    "Urgent_Service_Request": ["ANN", "Logic_KB", "CSP"],  # + optional Search
+    "Booking_or_Scheduling": ["Logic_KB", "CSP"],                         
+    "Urgent_Service_Request": ["ANN", "Logic_KB", "CSP"],                     
     "Full_Service_Request": ["ANN", "Logic_KB", "CSP", "Search"],
 }
-# OUR decision: for these types, Search is added only if current_location
-# was provided (the handout just says "optional / if needed").
+                                                                         
+                                                              
 OPTIONAL_SEARCH_TYPES = {"Booking_or_Scheduling", "Urgent_Service_Request"}
 
-# Optional fields accepted by the structured CLI form (Handout Sections 2.2).
+                                                                             
 OPTIONAL_FIELDS = {
     "Navigation_Only": [],
     "Eligibility_Check": [],
@@ -92,9 +92,9 @@ OPTIONAL_FIELDS = {
     "Full_Service_Request": ["group_id", "description_note"],
 }
 
-# ---------------------------------------------------------------------------
-# ANN encodings (Phase 2 Sec 1.2 - 1.3)
-# ---------------------------------------------------------------------------
+                                                                             
+                                       
+                                                                             
 FEATURE_ORDER = [
     "Role",
     "RequestType",
@@ -107,9 +107,9 @@ FEATURE_ORDER = [
 
 ROLE_ENCODING = {"student": 0, "instructor": 1, "staff": 2}
 
-# Built from CATEGORIES so the CLI and the ANN can never disagree.
-# Gives AI_Lab_Support=0, Viva=1, Access=2, Maintenance=3, Emergency_Help=4,
-# the same numbers as the handout's example.
+                                                                  
+                                                                            
+                                            
 CATEGORY_ENCODING = {}
 for number in range(len(CATEGORIES)):
     CATEGORY_ENCODING[CATEGORIES[number]] = number
@@ -117,10 +117,10 @@ for number in range(len(CATEGORIES)):
 PRIORITY_BINARY_LABELS = {0: "not_urgent", 1: "urgent"}
 PRIORITY_CLASS_LABELS = {0: "low", 1: "normal", 2: "high", 3: "urgent"}
 
-# ---------------------------------------------------------------------------
-# Templates (Phase 3 Sec 12.1 - 12.7). Use the new_*() helpers, not the dicts
-# directly, so two requests never share the same mutable object.
-# ---------------------------------------------------------------------------
+                                                                             
+                                                                             
+                                                                
+                                                                             
 REQUEST_TEMPLATE = {
     "request_id": "",
     "name": "",

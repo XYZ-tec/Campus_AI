@@ -24,14 +24,14 @@ from core.constants import (
     new_request,
 )
 
-# Fields whose value must be one of a fixed list of names
+                                                         
 CHOICE_FIELDS = {
     "category": CATEGORIES,
     "current_location": LOCATIONS,
     "destination": LOCATIONS,
 }
 
-# Fields whose value must be a whole number inside a range: (smallest, biggest)
+                                                                               
 NUMBER_FIELDS = {
     "preferred_slot": (min(VALID_SLOTS), max(VALID_SLOTS)),
     "severity": (SCORE_MIN, SCORE_MAX),
@@ -39,7 +39,7 @@ NUMBER_FIELDS = {
     "crowd_level": (SCORE_MIN, SCORE_MAX),
 }
 
-request_counter = 100       # request ids start at REQ101
+request_counter = 100                                    
 
 
 def generate_request_id():
@@ -83,7 +83,7 @@ def preprocess(raw_request):
     request["request_id"] = generate_request_id()
     errors = []
 
-    # ---- base fields: name, role, request_type (needed by every request) ----
+                                                                               
     name = str(raw_request.get("name") or "").strip()
     if name == "":
         errors.append("name is required")
@@ -98,10 +98,10 @@ def preprocess(raw_request):
     request_type = normalize_choice(raw_request.get("request_type") or "", REQUEST_TYPES)
     if request_type is None:
         errors.append("request_type must be one of: " + ", ".join(REQUEST_TYPES))
-        return request, errors      # without a valid type we do not know which fields to check
+        return request, errors                                                                 
     request["request_type"] = request_type
 
-    # ---- fields that depend on the request type (Phase 1, Section 2.2) ----
+                                                                             
     required = REQUIRED_FIELDS[request_type]
     allowed = required + OPTIONAL_FIELDS[request_type]
 
@@ -141,6 +141,6 @@ def preprocess(raw_request):
             else:
                 request["query"] = format_fact(normalize_fact(fact))
         else:
-            request[field] = text   # free-text field
+            request[field] = text                    
 
     return request, errors

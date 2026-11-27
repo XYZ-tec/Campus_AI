@@ -13,7 +13,7 @@ How to read the notation:
   (like x). Names that start with a capital letter are constants.
 """
 
-# ---- Facts from the instructor's diagram ----
+                                               
 FACTS = [
     ("Teaches", "DrKhan", "AI"),
     ("Enrolled", "Ali", "AI"),
@@ -23,7 +23,7 @@ FACTS = [
 ]
 
 RULES = [
-    # ---- R1 to R4: exactly as drawn in the instructor's diagram ----
+                                                                      
     {"name": "R1",
      "if": [("Student", "x"), ("Completed", "x", "ProgrammingFundamentals")],
      "then": ("Eligible", "x", "AI")},
@@ -37,9 +37,9 @@ RULES = [
      "if": [("Instructor", "x", "AI")],
      "then": ("UsesLab", "x", "Lab1")},
 
-    # ---- R5 to R8: OUR additions. The diagram only covers lab use and
-    # ---- eligibility, but booking requests need a rule that says who may
-    # ---- request which service. CanRequest(person, category) is that rule.
+                                                                       
+                                                                          
+                                                                            
     {"name": "R5",
      "if": [("Eligible", "x", "AI")],
      "then": ("CanRequest", "x", "Viva")},
@@ -54,6 +54,6 @@ RULES = [
      "then": ("CanRequest", "x", "Access")},
 ]
 
-# OUR decision: these categories are open to every user (an emergency request
-# must never be blocked by a rule), so the gate does not check the KB for them.
+                                                                             
+                                                                               
 OPEN_CATEGORIES = ["Maintenance", "Emergency_Help"]

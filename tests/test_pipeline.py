@@ -22,7 +22,7 @@ def full_request():
             "crowd_level": "5", "description_note": "Need urgent help"}
 
 
-# ---------------- preprocessing ----------------
+                                                 
 def test_normalization_fixes_case_and_spaces():
     assert normalize_choice("ai lab", ["AI_Lab", "Library"]) == "AI_Lab"
     assert normalize_choice("  MAIN-gate ", ["Main_Gate"]) == "Main_Gate"
@@ -57,7 +57,7 @@ def test_numbers_are_checked():
 
 def test_missing_required_fields_are_all_reported():
     request, errors = preprocess({"name": "", "role": "student", "request_type": "Navigation_Only"})
-    assert len(errors) == 3         # name, current_location, destination
+    assert len(errors) == 3                                              
 
 
 def test_unsupported_request_type_rejected():
@@ -72,7 +72,7 @@ def test_optional_field_left_empty_is_fine():
     assert errors == []
 
 
-# ---------------- router ----------------
+                                          
 def route_for(raw):
     request, errors = preprocess(raw)
     return route_request(request)
@@ -98,7 +98,7 @@ def test_router_optional_search():
     assert output["needs_ann"] == False
 
 
-# ---------------- final response (with fake module outputs) ----------------
+                                                                             
 def test_final_response_full_service():
     request, errors = preprocess(full_request())
     outputs = {
@@ -124,7 +124,7 @@ def test_final_response_logic_rejection():
     assert response["eligibility"]["allowed"] == False
 
 
-# ---------------- whole pipeline ----------------
+                                                  
 def test_navigation_end_to_end():
     response = process_request(navigation_request("hostel", "ai lab"))
     assert response["decision"] == "completed"

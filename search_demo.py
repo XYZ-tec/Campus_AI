@@ -1,9 +1,8 @@
 """Run all nine search algorithms for a source/destination pair."""
 
-import json
-
 from core.constants import LOCATIONS
 from modules.search import compare_all
+from modules.display import display_search_comparison
 
 
 def main():
@@ -12,7 +11,7 @@ def main():
     print(", ".join(LOCATIONS))
     source = input("Enter source: ").strip()
     destination = input("Enter destination: ").strip()
-    print(json.dumps(compare_all(source, destination), indent=2))
+    display_search_comparison(compare_all(source, destination))
 
 
 if __name__ == "__main__":

@@ -7,16 +7,15 @@ Handout reference: Phase 1, Sections 1 and 2 (the CLI form).
 Run it with:   python cli.py
 """
 
-import json
-
 from core.constants import (
     ROLES, REQUEST_TYPES, CATEGORIES, LOCATIONS, BASE_FIELDS,
     REQUIRED_FIELDS, OPTIONAL_FIELDS,
 )
 from modules.preprocessing import normalize_choice
 from pipeline import process_request
+from modules.display import display_final_response
 
-# The question shown for each field
+                                   
 PROMPTS = {
     "category": "Enter Category (" + " / ".join(CATEGORIES) + ")",
     "current_location": "Enter Current Location (" + ", ".join(LOCATIONS) + ")",
@@ -62,7 +61,7 @@ def collect_request():
 
     request_type = normalize_choice(raw_request["request_type"], REQUEST_TYPES)
     if request_type is None:
-        return raw_request          # preprocessing will reject the bad type
+        return raw_request                                                  
 
     for field in REQUIRED_FIELDS[request_type]:
         if field not in BASE_FIELDS:
@@ -74,13 +73,12 @@ def collect_request():
 
 def main():
     """Keep asking for requests until the user says no."""
-    print("=== Smart Campus AI Decision Support and Automation System ===")
+    print("Smart Campus AI Decision Support and Automation System")
     try:
         while True:
             raw_request = collect_request()
             response = process_request(raw_request)
-            print("\n--- Final Response ---")
-            print(json.dumps(response, indent=2))
+            display_final_response(response)
             again = ask("\nSubmit another request? (yes/no)").lower()
             if again != "yes" and again != "y":
                 break

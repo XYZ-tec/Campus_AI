@@ -9,15 +9,17 @@ import json
 import sys
 
 from pipeline import process_request
+from modules.display import display_final_response
 
 
 def main():
     """Read one JSON request from standard input and print its final response."""
     try:
         raw_request = json.load(sys.stdin)
-        print(json.dumps(process_request(raw_request), indent=2))
+        display_final_response(process_request(raw_request))
     except (json.JSONDecodeError, TypeError) as error:
-        print(json.dumps({"decision": "rejected", "message": "Invalid JSON input: " + str(error)}, indent=2))
+        print("Request could not be processed.")
+        print("Reason: Invalid JSON input - " + str(error))
 
 
 if __name__ == "__main__":

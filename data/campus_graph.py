@@ -21,7 +21,7 @@ is calculated from the map itself (see calculate_heuristic_scale).
 
 import math
 
-# (place_a, place_b, cost)  -- every edge works in both directions
+                                                                  
 EDGES = [
     ("Admin_Block", "Student_Services", 1),
     ("Admin_Block", "Main_Gate", 4),

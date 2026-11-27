@@ -140,7 +140,11 @@ def test_invalid_request_is_rejected_by_pipeline():
     assert "Invalid request" in response["message"]
 
 
-def test_modules_not_built_yet_are_reported():
+def test_full_service_runs_all_modules():
     response = process_request(full_request())
-    assert response["decision"] == "rejected"
-    assert "not built yet" in response["message"]
+    assert response["decision"] == "accepted"
+    assert response["priority"]["final_priority"] in ["low", "normal", "high", "urgent"]
+    assert response["eligibility"]["allowed"] is True
+    assert response["assignment"]["room"] == "AI_Lab"
+    assert response["assignment"]["slot"] == 3
+    assert response["route"]["path"][-1] == "AI_Lab"

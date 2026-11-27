@@ -62,6 +62,8 @@ def build_final_response(request, module_outputs):
         if csp["decision"] != "accepted":
             return build_rejection(request_id, "No valid assignment was found. " + csp["notes"])
         response["assignment"] = {"room": csp["assigned_room"], "slot": csp["assigned_slot"]}
+        if csp.get("notes"):
+            response["assignment"]["notes"] = csp["notes"]
 
     if "Search" in module_outputs:
         search = module_outputs["Search"]
@@ -83,7 +85,12 @@ def build_final_response(request, module_outputs):
         response["message"] = "Eligibility query answered successfully."
     elif request_type == "Booking_or_Scheduling":
         response["decision"] = "accepted"
-        response["message"] = "Booking assigned successfully."
+        response["message"] = (
+            "Booking assigned successfully: " + response["assignment"]["room"]
+            + " in slot " + str(response["assignment"]["slot"]) + "."
+        )
+        if "Search" in module_outputs:
+            response["message"] += " Please follow the recommended route."
     else:
         response["decision"] = "accepted"
         message = ("Your request has been accepted. You are assigned "

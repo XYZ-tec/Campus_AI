@@ -316,6 +316,13 @@ def compare_all(source, destination):
     IDS and Bidirectional BFS ignore the weights when choosing, which is exactly
     why they can return a more expensive route than UCS and A*."""
     graph = build_graph(weighted=True)
+    if source not in graph or destination not in graph:
+        results = []
+        names = ["BFS", "DFS", "DLS", "IDS", "Bidirectional BFS",
+                 "UCS", "Greedy Best-First", "A*", "RBFS"]
+        for name in names:
+            results.append(make_result(name, graph, None, 0))
+        return results
     results = []
     results.append(bfs(graph, source, destination))
     results.append(dfs(graph, source, destination))

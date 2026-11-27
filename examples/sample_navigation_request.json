@@ -1,0 +1,7 @@
+{
+  "name": "Ali",
+  "role": "student",
+  "request_type": "Navigation_Only",
+  "current_location": "Hostel",
+  "destination": "AI_Lab"
+}

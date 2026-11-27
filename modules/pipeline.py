@@ -1,49 +1,64 @@
 """
-pipeline.py
-===========
-The ONE function that runs a whole request:  process_request(raw_request).
-The CLI and (later) the UI both call this function, so they behave identically.
+modules/pipeline.py
+===================
+Central integration layer for the Smart Campus AI system.
 
-Handout reference: Phase 3, Sections 1, 2 and 5 (module-to-module flow).
-
-Flow:  Preprocessing -> Router -> selected modules (in order) -> Final Response
+The router selects modules. ANN predicts priority, Logic / KB validates
+permission, CSP allocates resources, Search finds a route, and the final
+response combines only the outputs produced by the selected pipeline.
 """
 
 from modules.preprocessing import preprocess
 from modules.router import route_request
+from modules.ann import predict_priority, TARGET_ROOMS
 from modules.logic_kb import check_query, check_request
+from modules.csp import schedule_request
 from modules.search import find_route
 from modules.final_response import build_rejection, build_final_response
 
-# Modules that exist so far. We add CSP and ANN as we build them.
-READY_MODULES = ["Search", "Logic_KB"]
-
 
 def process_request(raw_request):
-    """Run one request through the full system and return the final response."""
+    """Validate one raw request, execute its routed modules, and return one response."""
     request, errors = preprocess(raw_request)
-    if len(errors) > 0:
-        return build_rejection(request["request_id"],
-                               "Invalid request: " + "; ".join(errors))
+    if errors:
+        return build_rejection(
+            request["request_id"], "Invalid request: " + "; ".join(errors)
+        )
 
     router_output = route_request(request)
     if router_output is None:
         return build_rejection(request["request_id"], "Request type is not supported.")
 
     module_outputs = {}
+    assigned_destination = request.get("destination", "")
+
     for module_name in router_output["selected_pipeline"]:
-        if module_name not in READY_MODULES:
-            return build_rejection(request["request_id"],
-                                   module_name + " module is not built yet.")
-        if module_name == "Logic_KB":
+        if module_name == "ANN":
+            module_outputs["ANN"] = predict_priority(request)
+
+        elif module_name == "Logic_KB":
             if request["request_type"] == "Eligibility_Check":
                 module_outputs["Logic_KB"] = check_query(request["query"])
-            else:
-                module_outputs["Logic_KB"] = check_request(request)
-                if module_outputs["Logic_KB"]["allowed"] == False:
-                    break           # not allowed: stop here, never reach CSP
-        if module_name == "Search":
-            module_outputs["Search"] = find_route(request["current_location"],
-                                                  request["destination"])
+                break
+            module_outputs["Logic_KB"] = check_request(request)
+            if not module_outputs["Logic_KB"]["allowed"]:
+                break
+
+        elif module_name == "CSP":
+            priority = "normal"
+            if "ANN" in module_outputs:
+                priority = module_outputs["ANN"]["final_priority"]
+            module_outputs["CSP"] = schedule_request(request, priority)
+            if module_outputs["CSP"]["decision"] != "accepted":
+                break
+            assigned_destination = module_outputs["CSP"]["destination"]
+
+        elif module_name == "Search":
+            destination = assigned_destination
+            if not destination:
+                destination = TARGET_ROOMS.get(request.get("category", ""), "")
+            module_outputs["Search"] = find_route(
+                request["current_location"], destination
+            )
 
     return build_final_response(request, module_outputs)

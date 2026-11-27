@@ -83,6 +83,15 @@ PIPELINES = {
 # was provided (the handout just says "optional / if needed").
 OPTIONAL_SEARCH_TYPES = {"Booking_or_Scheduling", "Urgent_Service_Request"}
 
+# Optional fields accepted by the structured CLI form (Handout Sections 2.2).
+OPTIONAL_FIELDS = {
+    "Navigation_Only": [],
+    "Eligibility_Check": [],
+    "Booking_or_Scheduling": ["group_id", "current_location"],
+    "Urgent_Service_Request": ["preferred_slot", "group_id", "description_note"],
+    "Full_Service_Request": ["group_id", "description_note"],
+}
+
 # ---------------------------------------------------------------------------
 # ANN encodings (Phase 2 Sec 1.2 - 1.3)
 # ---------------------------------------------------------------------------
